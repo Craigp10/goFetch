@@ -74,5 +74,5 @@ func FetchUrlsSync(urls []string) fetchSync {
 	return res
 }
 
-// Call from command line -- No longer implemented
+// Call from command line -- No longer implemented -- Only can use when running program from command line
 // ./go-fetching https://godoc.org https://golang.org http://gopl.io https://www.reddit.com/r/learnprogramming/

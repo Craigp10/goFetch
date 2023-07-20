@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go-fetch/fetch"
+	"go-fetch/utils"
 	"log"
 	"net/http"
-	"practice-gin/fetch"
-	"practice-gin/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -75,7 +75,7 @@ func main() {
 	})
 
 	r.POST("/fetchUrlsAttempts", func(c *gin.Context) {
-
+		// Issue with body being empty -- Definitely shouldn'y parse in endpoint handler
 		var body Body
 		var urls []string
 		var attempts int

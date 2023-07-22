@@ -20,3 +20,38 @@ To run this application follow these steps:
       c. Run docker container with image - execute `docker run -p 8080:8080 -d --name go_fetch go-fetch`
       d. Ensure container named `go_fetch` is running - execute `docker ps`
 5. Make request to server. Examples below...
+
+Endoint: `http://localhost:8080/fetchUrlsAttempts`
+Body:
+
+```
+{
+	"urls":[
+	"https://godoc.org",
+	"https://golang.org",
+	"http://gopl.io",
+	"https://google.com",
+	"https://www.google.com/search?q=golang",
+	"https://github.com/Craigp10/goFetch",
+	"https://www.reddit.com/r/learnprogramming"
+	],
+	"attempts":5
+}
+```
+
+Endpoint: `http://localhost:8080/fetchUrls`
+Body:
+
+```
+{
+	"urls":[
+	"https://godoc.org",
+	"https://golang.org",
+	"http://gopl.io",
+	"https://google.com",
+	"https://www.google.com/search?q=golang",
+	"https://github.com/Craigp10/goFetch",
+	"https://www.reddit.com/r/learnprogramming"
+	]
+}
+```

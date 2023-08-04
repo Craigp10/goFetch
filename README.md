@@ -1,8 +1,10 @@
 # Welcome to goFetch
 
-goFetch is a quick program I made to gain some experience using multiple technologies, including go's sync package, docker, and http go framework gin.
+goFetch is a program created to gain some exposure using go's sync package, docker, and net/http go library.
 
-The functionality of the app is to fetch the provided urls utilizing concurrency vs iteration, and provide metrics to display the advantages of each approach.
+The continued development of goFetch will branch into imporved containerization, deeper networking programming and concurrency on the web.
+
+The current functionality of the app is to fetch the provided urls utilizing concurrency vs iteration, and provide metrics to display the advantages of each approach.
 
 To run this application follow these steps:
 

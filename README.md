@@ -1,6 +1,6 @@
 # Welcome to goFetch
 
-goFetch is a program created to gain some exposure using go's sync package, docker, and net/http go library.
+goFetch is a program created to gain some exposure building an application specific go packages and docker.
 
 The continued development of goFetch will branch into imporved containerization, deeper networking programming and concurrency on the web.
 

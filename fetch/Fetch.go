@@ -14,7 +14,7 @@ type TimeStruct struct {
 	Start    time.Time
 	End      time.Time
 	Duration float64
-	Status   string
+	Status   Status
 	Bytes    int64
 }
 
@@ -23,7 +23,7 @@ type FetchSyncd struct {
 	Start    time.Time
 	End      time.Time
 	Duration float64
-	Status   string
+	Status   Status
 }
 
 var wg sync.WaitGroup

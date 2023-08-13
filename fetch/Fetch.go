@@ -42,7 +42,7 @@ func FetchSyncCh(url string, ch chan<- TimeStruct) {
 	defer func() { ch <- t }()
 	t.Start = time.Now()
 	t.Url = url
-	resp, err := fetchUrl(url)
+	resp, err := FetchUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
 		t.Status = Failure
@@ -66,7 +66,7 @@ func FetchSync(url string) TimeStruct {
 	var res TimeStruct
 	res.Url = url
 	res.Start = time.Now()
-	resp, err := fetchUrl(url)
+	resp, err := FetchUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
 		res.Status = Failure
@@ -86,7 +86,7 @@ func FetchSync(url string) TimeStruct {
 }
 
 // fetchUrl performs a GET request on the provided url
-func fetchUrl(url string) (*http.Response, error) {
+func FetchUrl(url string) (*http.Response, error) {
 	return http.Get(url)
 }
 

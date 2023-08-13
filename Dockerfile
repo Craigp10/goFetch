@@ -33,5 +33,5 @@ ENTRYPOINT ["/go/bin/go-fetch"]
 # docker build --tag go-fetch .
 
 #Run docker container w/ image in detached mode exposing port 8080
-# docker run -p 8080:8080 -it go-fetch
-# docker run -p 8080:8080 -d go-fetch
+# docker run -p 8080:8080 -d --name go_fetch go-fetch
+# docker run -p 8080:8080 -it --name go_fetch go-fetch

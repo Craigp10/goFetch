@@ -6,7 +6,6 @@ import (
 	"go-fetch/fetch"
 	"go-fetch/utils"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -19,10 +18,10 @@ type fetchUrlsRequest struct {
 }
 
 type fetchUrlsResponse struct {
-	chUrls    string
+	ChUrls    []fetch.TimeStruct `json:"ChUrls"`
 	ChTimed   float64
 	SyncTimed float64
-	syncUrls  string
+	SyncUrls  fetch.FetchSyncd `json:"SyncUrls"`
 }
 
 type fetchUrlsAttemptsRequest struct {
@@ -71,10 +70,11 @@ func main() {
 	http.ListenAndServe(":8080", router)
 }
 
+// fetchUrls fetches the provided urls
 func fetchUrls(w http.ResponseWriter, r *http.Request) {
 	var urls urls
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Error reading request body: %v", err)
@@ -99,23 +99,22 @@ func fetchUrls(w http.ResponseWriter, r *http.Request) {
 	startCh := time.Now()
 	chTimedUrls := fetch.FetchUrlsGo(urls.Urls)
 	elpsdTimeCh := time.Now().Sub(startCh).Seconds()
-	chTimedData, err := json.Marshal(chTimedUrls)
+	// chTimedData, err := json.Marshal(chTimedUrls)
 	startSync := time.Now()
 	syncTimedUrls := fetch.FetchUrlsSync(urls.Urls)
 	elpsdTimeSync := time.Now().Sub(startSync).Seconds()
-	syncTimedData, err := json.Marshal(syncTimedUrls)
+	// syncTimedData, err := json.Marshal(syncTimedUrls)
 
 	if err != nil {
 		panic(err)
 	}
 
 	f := fetchUrlsResponse{
-		chUrls:    string(chTimedData),
+		ChUrls:    chTimedUrls,
 		ChTimed:   elpsdTimeCh,
 		SyncTimed: elpsdTimeSync,
-		syncUrls:  string(syncTimedData),
+		SyncUrls:  syncTimedUrls,
 	}
-	// c.JSON(http.StatusOK, gin.H{"chUrls": string(chTimedData), "ChTimed": elpsdTimeCh, "SyncTimed": elpsdTimeSync, "syncUrls": string(syncTimedData)})
 
 	writeResponse(w, f)
 }
@@ -127,7 +126,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 	// Definitely shouldn't parse in endpoint handler
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Error reading request body: %v", err)
@@ -185,7 +184,6 @@ func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 	syncAvg := utils.Average(syncValues)
 	duration := time.Since(start).Seconds()
 
-	// c.JSON(http.StatusOK, gin.H{"totalTime": duration, "chAvg": chAvg, "syncAvg": syncAvg})
 	a := fetchUrlsAttemptsResponse{
 		TotalTime: duration,
 		ChAvg:     chAvg,

@@ -1,52 +1,74 @@
 package fetch
 
 import (
+	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
 
-func FetchCh(url string, ch chan<- timeStruct) {
-	var t timeStruct
+// FetchSyncCh manages the sync via channel
+func FetchSyncCh(url string, ch chan<- TimeStruct) {
+	var t TimeStruct
 	defer wg.Done()
+	defer func() { ch <- t }()
 	t.Start = time.Now()
-	resp, err := http.Get(url)
-	t.End = time.Now()
 	t.Url = url
-	t.Status = "success"
+	resp, err := fetchUrl(url)
+	if err != nil {
+		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
+		t.Status = Failure
+		return
+	}
+	t.End = time.Now()
 	t.Duration = time.Since(t.Start).Seconds()
+	t.Bytes, err = readResponseBody(resp)
 	if err != nil {
-		t.Status = "failure"
+		fmt.Printf("Unable to read response body for url [ %s ], -- %v,\n", url, err)
+		t.Status = Failure
 		return
 	}
-	nbytes, err := io.Copy(ioutil.Discard, resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		t.Status = "failure"
-		return
-	}
-	t.Bytes = nbytes
-	ch <- t
+	t.Status = Success
+
 	return
 }
 
-func FetchSync(url string) timeStruct {
-	var res timeStruct
+// FetchSync manages the 'sync' for a provided url
+func FetchSync(url string) TimeStruct {
+	var res TimeStruct
 	res.Url = url
 	res.Start = time.Now()
-	resp, err := http.Get(url)
+	resp, err := fetchUrl(url)
+	if err != nil {
+		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
+		res.Status = Failure
+		return res
+	}
 	res.End = time.Now()
-
 	secs := time.Since(res.Start).Seconds()
 	res.Duration = secs
-	nbytes, err := io.Copy(ioutil.Discard, resp.Body)
-	resp.Body.Close()
+	res.Bytes, err = readResponseBody(resp)
 	if err != nil {
-		res.Status = "failure"
+		res.Status = Failure
+		return res
 	}
-	res.Bytes = nbytes
-
+	res.Status = Success
 	return res
 
+}
+
+// fetchUrl performs a GET request on the provided url
+func fetchUrl(url string) (*http.Response, error) {
+	return http.Get(url)
+}
+
+// readResponseBody assumes successful response argument and copies the response body into an int64 buffer
+func readResponseBody(resp *http.Response) (int64, error) { // Maybe byte[] instead of int?
+	var buf int64
+	defer resp.Body.Close()
+	buf, err := io.Copy(io.Discard, resp.Body)
+	if err != nil {
+		return buf, err
+	}
+	return buf, nil
 }

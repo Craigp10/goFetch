@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type timeStruct struct {
+type TimeStruct struct {
 	Url      string
 	Start    time.Time
 	End      time.Time
@@ -15,38 +15,38 @@ type timeStruct struct {
 	Bytes    int64
 }
 
-type fetchSync struct {
-	Urls     []timeStruct
+type FetchSyncd struct {
+	Urls     []TimeStruct
 	Start    time.Time
 	End      time.Time
 	Duration float64
-	// Status   string
+	Status   string
 }
 
 var wg sync.WaitGroup
 
-func FetchUrlsGo(urls []string) []timeStruct {
-	// var res []timeStruct
-	// start := time.Now()
-	ch := make(chan timeStruct)
+const (
+	Failure string = "failure"
+	Success        = "success"
+)
+
+// FetchUrlsGo fetches the provided urls and 'syncs' the response via go routines
+func FetchUrlsGo(urls []string) []TimeStruct {
+	ch := make(chan TimeStruct)
 	for _, url := range urls {
 		wg.Add(1)
-		go FetchCh(url, ch)
+		go FetchSyncCh(url, ch)
 	}
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
-	// for k := range ch {
-	// 	// fmt.Printf(" Url: %s \n Start Time: %s \n End Time: %s \n Duration: %f \n Length: %d\n", k.Url, k.Start, k.End, k.Duration, k.Bytes)
-	// 	// fmt.Println(" ****************** ")
-	// 	res = append(res, k)
-	// }
-	res := ChanToSlice(ch).([]timeStruct)
+	res := ChanToSlice(ch).([]TimeStruct)
 	// fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
 	return res
 }
 
+// ChanToSlice converts a channel to a slice of any type
 func ChanToSlice(ch interface{}) interface{} {
 	chv := reflect.ValueOf(ch)
 	slv := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(ch).Elem()), 0, 0)
@@ -59,9 +59,10 @@ func ChanToSlice(ch interface{}) interface{} {
 	}
 }
 
-func FetchUrlsSync(urls []string) fetchSync {
-	var res fetchSync
-	var urlsResp []timeStruct
+// FetchUrlsSync fetches the provided urls and 'syncs' the responses
+func FetchUrlsSync(urls []string) FetchSyncd {
+	var res FetchSyncd
+	var urlsResp []TimeStruct
 	res.Start = time.Now()
 
 	for _, url := range urls {
@@ -71,6 +72,7 @@ func FetchUrlsSync(urls []string) fetchSync {
 	res.End = time.Now()
 	res.Duration = time.Since(res.Start).Seconds()
 	res.Urls = urlsResp
+	res.Status = Success
 	return res
 }
 

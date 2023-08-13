@@ -52,6 +52,15 @@ type fetchAllResp struct {
 	Stats            []timeRequest `json:"stats"`
 }
 
+type fetchValidateRequest struct {
+	Urls []string
+}
+
+type fetchValidateResponse struct {
+	Valid       bool
+	InValidUrls []string
+}
+
 type urls struct {
 	Urls []string `json:"urls"`
 }
@@ -65,9 +74,39 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", hello).Methods("GET")
-	router.HandleFunc("/fetchUrls", fetchUrls).Methods("POST")
-	router.HandleFunc("/fetchUrlsAttempts", fetchUrlsAttempts).Methods("POST")
+	router.HandleFunc("/fetch", fetchUrls).Methods("POST")
+	router.HandleFunc("/fetch/attempts", fetchUrlsAttempts).Methods("POST")
+	router.HandleFunc("/fetch/validate", fetchUrlsValidate).Methods("POST")
 	http.ListenAndServe(":8080", router)
+}
+
+func fetchUrlsValidate(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error reading request body: %v", err)
+		return
+	}
+
+	f := fetchValidateRequest{}
+	defer r.Body.Close()
+
+	if err := json.Unmarshal(body, &f); err != nil {
+		log.Fatal("Error binding urls", err)
+	}
+	fmt.Printf("Running %d", f.Urls)
+	res := fetchValidateResponse{
+		Valid: true,
+	}
+	for _, url := range f.Urls {
+		resp, err := fetch.FetchUrl(url)
+		if err != nil || resp == nil {
+			res.Valid = false
+			res.InValidUrls = append(res.InValidUrls, url)
+		}
+	}
+
+	writeResponse(w, res)
 }
 
 // fetchUrls fetches the provided urls

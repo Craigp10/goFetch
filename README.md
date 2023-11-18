@@ -2,9 +2,9 @@
 
 goFetch is a program created to gain some exposure building an application specific go packages and docker.
 
-The continued development of goFetch will branch into imporved containerization, deeper networking programming and concurrency on the web.
+The continued development of goFetch will branch into improved containerization, deeper networking programming, along with concurrency on the web.
 
-The current functionality of the app is to fetch the provided urls utilizing concurrency vs iteration, and provide metrics to display the advantages of each approach.
+The current functionality of the app is to fetch provided URLs utilizing concurrency and iteration contrasting the request time of each approach.
 
 To run this application follow these steps:
 
@@ -17,7 +17,7 @@ To run this application follow these steps:
 4. Run local either of options below:
    1. Local go server - execute in terminal `go run server.go`
    2. Local docker container
-      a. Ensure docker is installed locally [here]()
+      a. Ensure docker is installed locally [here](https://docs.docker.com/engine/install/)
       b. Build Docker image - execute `docker build --tag go-fetch .`
       c. Run docker container with image - execute `docker run -p 8080:8080 -d --name go_fetch go-fetch`
       d. Ensure container named `go_fetch` is running - execute `docker ps`
@@ -32,13 +32,13 @@ Body:
 ```
 {
 	"urls":[
-	"https://godoc.org",
-	"https://golang.org",
-	"http://gopl.io",
-	"https://google.com",
-	"https://www.google.com/search?q=golang",
-	"https://github.com/Craigp10/goFetch",
-	"https://www.reddit.com/r/learnprogramming"
+		"https://godoc.org",
+		"https://golang.org",
+		"http://gopl.io",
+		"https://google.com",
+		"https://www.google.com/search?q=golang",
+		"https://github.com/Craigp10/goFetch",
+		"https://www.reddit.com/r/learnprogramming"
 	],
 	"attempts":5
 }
@@ -215,13 +215,13 @@ Body:
 ```
 {
 	"urls":[
-	"https://godoc.org",
-	"https://golang.org",
-	"http://gopl.io",
-	"https://google.com",
-	"https://www.google.com/search?q=golang",
-	"https://github.com/Craigp10/goFetch",
-	"https://www.reddit.com/r/learnprogramming"
+		"https://godoc.org",
+		"https://golang.org",
+		"http://gopl.io",
+		"https://google.com",
+		"https://www.google.com/search?q=golang",
+		"https://github.com/Craigp10/goFetch",
+		"https://www.reddit.com/r/learnprogramming"
 	]
 }
 ```
@@ -244,13 +244,13 @@ Body:
 ```
 {
 	"urls":[
-	"https://godoc.org",
-	"https://golang.org",
-	"http://gopl.io",
-	"https://google.com",
-	"https://www.google.com/search?q=golang",
-	"https://github.com/Craigp10/goFetch",
-	"https://www.reddit.com/r/learnprogramming"
+		"https://godoc.org",
+		"https://golang.org",
+		"http://gopl.io",
+		"https://google.com",
+		"https://www.google.com/search?q=golang",
+		"https://github.com/Craigp10/goFetch",
+		"https://www.reddit.com/r/learnprogramming"
 	]
 }
 ```

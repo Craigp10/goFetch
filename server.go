@@ -70,7 +70,7 @@ type attemptTimes struct {
 	syncTime float64
 }
 
-func main() {
+func server() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", hello).Methods("GET")

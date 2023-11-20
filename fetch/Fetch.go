@@ -18,7 +18,7 @@ type TimeStruct struct {
 	Bytes    int64
 }
 
-type FetchSyncd struct {
+type Syncd struct {
 	Urls     []TimeStruct
 	Start    time.Time
 	End      time.Time
@@ -35,14 +35,14 @@ const (
 	Success Status = "success"
 )
 
-// FetchSyncCh manages the sync via channel
-func FetchSyncCh(url string, ch chan<- TimeStruct) {
+// SyncCh manages the sync via channel
+func SyncCh(url string, ch chan<- TimeStruct) {
 	var t TimeStruct
 	defer wg.Done()
 	defer func() { ch <- t }()
 	t.Start = time.Now()
 	t.Url = url
-	resp, err := FetchUrl(url)
+	resp, err := GetUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
 		t.Status = Failure
@@ -61,12 +61,12 @@ func FetchSyncCh(url string, ch chan<- TimeStruct) {
 	return
 }
 
-// FetchSync manages the 'sync' for a provided url
-func FetchSync(url string) TimeStruct {
+// Sync manages the 'sync' for a provided url
+func Sync(url string) TimeStruct {
 	var res TimeStruct
 	res.Url = url
 	res.Start = time.Now()
-	resp, err := FetchUrl(url)
+	resp, err := GetUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
 		res.Status = Failure
@@ -86,7 +86,7 @@ func FetchSync(url string) TimeStruct {
 }
 
 // fetchUrl performs a GET request on the provided url
-func FetchUrl(url string) (*http.Response, error) {
+func GetUrl(url string) (*http.Response, error) {
 	return http.Get(url)
 }
 
@@ -101,12 +101,12 @@ func readResponseBody(resp *http.Response) (int64, error) { // Maybe byte[] inst
 	return buf, nil
 }
 
-// FetchUrlsGo fetches the provided urls and 'syncs' the response via go routines
-func FetchUrlsGo(urls []string) []TimeStruct {
+// GetUrlsGo fetches the provided urls and 'syncs' the response via go routines
+func GetUrlsGo(urls []string) []TimeStruct {
 	ch := make(chan TimeStruct)
 	for _, url := range urls {
 		wg.Add(1)
-		go FetchSyncCh(url, ch)
+		go SyncCh(url, ch)
 	}
 	go func() {
 		wg.Wait()
@@ -130,14 +130,14 @@ func ChanToSlice(ch interface{}) interface{} {
 	}
 }
 
-// FetchUrlsSync fetches the provided urls and 'syncs' the responses
-func FetchUrlsSync(urls []string) FetchSyncd {
-	var res FetchSyncd
+// GetUrlsSync fetches the provided urls and 'syncs' the responses
+func GetUrlsSync(urls []string) Syncd {
+	var res Syncd
 	var urlsResp []TimeStruct
 	res.Start = time.Now()
 
 	for _, url := range urls {
-		iter := FetchSync(url)
+		iter := Sync(url)
 		urlsResp = append(urlsResp, iter)
 	}
 	res.End = time.Now()

@@ -21,7 +21,7 @@ type fetchUrlsResponse struct {
 	ChUrls    []fetch.TimeStruct `json:"ChUrls"`
 	ChTimed   float64
 	SyncTimed float64
-	SyncUrls  fetch.FetchSyncd `json:"SyncUrls"`
+	SyncUrls  fetch.Syncd `json:"SyncUrls"`
 }
 
 type fetchUrlsAttemptsRequest struct {
@@ -94,12 +94,11 @@ func fetchUrlsValidate(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, &f); err != nil {
 		log.Fatal("Error binding urls", err)
 	}
-	fmt.Printf("Running %d", f.Urls)
 	res := fetchValidateResponse{
 		Valid: true,
 	}
 	for _, url := range f.Urls {
-		resp, err := fetch.FetchUrl(url)
+		resp, err := fetch.GetUrl(url)
 		if err != nil || resp == nil {
 			res.Valid = false
 			res.InValidUrls = append(res.InValidUrls, url)
@@ -126,7 +125,7 @@ func fetchUrls(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, &urls); err != nil {
 		log.Fatal("Error binding urls", err)
 	}
-	fmt.Println("fetchUrls", len(urls.Urls))
+	fmt.Printf("fetched urls: [%d]\n", len(urls.Urls))
 
 	if len(urls.Urls) == 0 {
 		w.WriteHeader(400)
@@ -136,11 +135,11 @@ func fetchUrls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	startCh := time.Now()
-	chTimedUrls := fetch.FetchUrlsGo(urls.Urls)
+	chTimedUrls := fetch.GetUrlsGo(urls.Urls)
 	elpsdTimeCh := time.Now().Sub(startCh).Seconds()
 	// chTimedData, err := json.Marshal(chTimedUrls)
 	startSync := time.Now()
-	syncTimedUrls := fetch.FetchUrlsSync(urls.Urls)
+	syncTimedUrls := fetch.GetUrlsSync(urls.Urls)
 	elpsdTimeSync := time.Now().Sub(startSync).Seconds()
 	// syncTimedData, err := json.Marshal(syncTimedUrls)
 
@@ -201,10 +200,10 @@ func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < f.Attempts; i++ {
 		startCh := time.Now()
-		fetch.FetchUrlsGo(f.Urls)
+		fetch.GetUrlsGo(f.Urls)
 		elpsdTimeCh := time.Now().Sub(startCh).Seconds()
 		startSync := time.Now()
-		fetch.FetchUrlsSync(f.Urls)
+		fetch.GetUrlsSync(f.Urls)
 		elpsdTimeSync := time.Now().Sub(startSync).Seconds()
 		attemptsTimed = append(attemptsTimed, attemptTimes{
 			chTime:   elpsdTimeCh,

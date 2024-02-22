@@ -1,10 +1,13 @@
 # Welcome to goFetch
 
-goFetch is a program created to gain some exposure building an application specific go packages and docker.
+goFetch is an Obserability program aimed to provide insight and later provide analytics on network requests.  
+
+Currently in version 1 where the user can see the runtime of fetching provided URLs through both synchronous and asynchronous approaches. 
+
+goFetch was created to gain exposure by building an application with specific go packages and docker with the intent to eventually be scaled up to a network request observability plugin.
 
 The continued development of goFetch will branch into improved containerization, deeper networking programming, along with concurrency on the web.
 
-The current functionality of the app is to fetch provided URLs utilizing concurrency and iteration contrasting the request time of each approach.
 
 To run this application follow these steps:
 

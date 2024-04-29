@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"encoding/json"
@@ -70,14 +70,18 @@ type attemptTimes struct {
 	syncTime float64
 }
 
-func server() {
+type Config struct {
+	Port string
+}
+
+func Run(cfg Config) {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", hello).Methods("GET")
 	router.HandleFunc("/fetch", fetchUrls).Methods("POST")
 	router.HandleFunc("/fetch/attempts", fetchUrlsAttempts).Methods("POST")
 	router.HandleFunc("/fetch/validate", fetchUrlsValidate).Methods("POST")
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(cfg.Port, router)
 }
 
 func fetchUrlsValidate(w http.ResponseWriter, r *http.Request) {

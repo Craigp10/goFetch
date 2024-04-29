@@ -8,6 +8,8 @@ import (
 	"go-fetch/fetch"
 	"os"
 
+	"go-fetch/server"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +29,7 @@ to quickly create a Cobra application.`,
 }
 
 // ./go-fetch fetch https://google.com https://meemeals.com
+// go-fetch fetch https://google.com https://meemeals.com www.google.com
 var fetchCmd = &cobra.Command{
 	Use:   "fetch [urls...]",
 	Short: "fetch can be considered a variadic go function, provide any number of strings as input, where strings need to be valid Urls",
@@ -54,6 +57,7 @@ var fetchCmd = &cobra.Command{
 }
 
 // ./go-fetch validate https://google.com https://meemeals.com www.google.com
+// go-fetch validate https://google.com https://meemeals.com www.google.com
 var validateCmd = &cobra.Command{
 	Use:   "validate [urls...]",
 	Short: "validate can be considered a variadic go function, provide any number of strings as input.",
@@ -83,6 +87,39 @@ var validateCmd = &cobra.Command{
 	},
 }
 
+// ./go-fetch run --port 8081
+// go-fetch run --port 8081
+func NewRun() *cobra.Command {
+	var b struct {
+		Port string
+	}
+	var runCmd = &cobra.Command{
+		Use:   "run ...opts",
+		Short: "runs the programs rest api to listen for api request on port 8080",
+		Args:  cobra.MinimumNArgs(0), // Requires at least one variadic string argument
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(args)
+			fmt.Println("Port value", b.Port)
+			// // TODO add configuration values for server run
+			cfg := server.Config{
+				Port: fmt.Sprintf(":%s", b.Port),
+			}
+
+			server.Run(cfg)
+		},
+	}
+
+	// var sPort string
+	runCmd.Flags().StringVar(
+		&b.Port,
+		"port",
+		"8080",
+		"Port to run on",
+	)
+
+	return runCmd
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -107,4 +144,6 @@ func init() {
 	rootCmd.AddCommand(fetchCmd)
 	fetchCmd.Flags().BoolVar(&useSync, "useSync", false, "Use Sync library to fetch urls")
 	rootCmd.AddCommand(validateCmd)
+
+	rootCmd.AddCommand(NewRun())
 }

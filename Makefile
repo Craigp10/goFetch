@@ -6,4 +6,3 @@ BINARY_PATH=~/bin/
 
 default:
 	$(GOBUILD) -o $(BINARY_PATH)
-	

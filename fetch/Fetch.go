@@ -73,8 +73,8 @@ func Sync(url string) TimeStruct {
 		return res
 	}
 	res.End = time.Now()
-	secs := time.Since(res.Start).Seconds()
-	res.Duration = secs
+	seconds := time.Since(res.Start).Seconds()
+	res.Duration = seconds
 	res.Bytes, err = readResponseBody(resp)
 	if err != nil {
 		res.Status = Failure

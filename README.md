@@ -1,13 +1,12 @@
 # Welcome to goFetch
 
-goFetch is an Obserability program aimed to provide insight and later provide analytics on network requests.  
+goFetch is an Obserability program aimed to provide insight and later provide analytics on network requests.
 
-Currently in version 1 where the user can see the runtime of fetching provided URLs through both synchronous and asynchronous approaches. 
+Currently in version 1 where the user can see the runtime of fetching provided URLs through both synchronous and asynchronous approaches.
 
 goFetch was created to gain exposure by building an application with specific go packages and docker with the intent to eventually be scaled up to a network request observability plugin.
 
 The continued development of goFetch will branch into improved containerization, deeper networking programming, along with concurrency on the web.
-
 
 To run this application follow these steps:
 
@@ -25,6 +24,16 @@ To run this application follow these steps:
       c. Run docker container with image - execute `docker run -p 8080:8080 -d --name go_fetch go-fetch`
       d. Ensure container named `go_fetch` is running - execute `docker ps`
 5. Make request to server. Examples below...
+
+If you choose to run the application via cli follow these steps:
+
+1. Build the binary
+   `go build .`
+2. Move the binary to your PATH, most likely in the following path
+   `/Users/<userprofile>/bin/`
+3. Execute the following to run the server on port 8080
+   `go-fetch run --port 8080`
+4. Make request.
 
 ## API Endpoints
 

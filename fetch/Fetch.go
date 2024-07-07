@@ -62,7 +62,6 @@ func SyncCh(url string, ch chan<- TimeStruct) {
 	resp, err := GetUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
-		t.Status = Failure
 		return
 	}
 
@@ -79,10 +78,11 @@ func SyncCh(url string, ch chan<- TimeStruct) {
 
 func SyncMutex(url string, synced *Syncd) {
 	var t TimeStruct
-
+	status := Failure
 	defer func() {
 		synced.SetMutex(t)
 		wg.Done()
+		t.Status = status
 	}()
 
 	t.Start = time.Now()
@@ -91,7 +91,6 @@ func SyncMutex(url string, synced *Syncd) {
 	resp, err := GetUrl(url)
 	if err != nil {
 		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
-		t.Status = Failure
 		return
 	}
 
@@ -100,11 +99,10 @@ func SyncMutex(url string, synced *Syncd) {
 	t.Bytes, err = readResponseBody(resp)
 	if err != nil {
 		fmt.Printf("Unable to read response body for url [ %s ], -- %v,\n", url, err)
-		t.Status = Failure
 		return
 	}
 
-	t.Status = Success
+	status = Success
 }
 
 // Sync manages the 'sync' for a provided url

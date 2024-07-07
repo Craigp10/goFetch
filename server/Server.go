@@ -176,7 +176,6 @@ func hello(w http.ResponseWriter, r *http.Request) {
 
 func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 	// Definitely shouldn't parse in endpoint handler
-	fmt.Println("Checking")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -247,7 +246,7 @@ func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 		SyncAvg:   syncAvg,
 		MutexAvg:  mutexAvg,
 	}
-	fmt.Println(mutexAvg)
+
 	writeResponse(w, a)
 }
 
@@ -281,5 +280,6 @@ func generateException(message string) []byte {
 	if err != nil {
 		panic("Error generating exception")
 	}
+
 	return b
 }

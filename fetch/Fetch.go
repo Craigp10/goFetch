@@ -36,7 +36,7 @@ func (s *Syncd) SetMutex(ts TimeStruct) {
 	s.Urls = append(s.Urls, ts)
 }
 
-var wg sync.WaitGroup
+// var wg sync.WaitGroup
 
 type Status string
 
@@ -46,43 +46,49 @@ const (
 )
 
 // SyncCh manages the sync via channel
-func SyncCh(url string, ch chan<- TimeStruct) {
-	var t TimeStruct
-	status := Failure
-
+func SyncCh(url string, ch chan<- TimeStruct, wg *sync.WaitGroup) {
 	defer wg.Done()
-	defer func() {
-		ch <- t
-		t.Status = status
-	}()
 
+	var t TimeStruct
 	t.Start = time.Now()
 	t.Url = url
 
 	resp, err := GetUrl(url)
 	if err != nil {
-		fmt.Printf("Unable to fetch url [ %s ], -- %v,\n", url, err)
+		fmt.Printf("Error fetching URL [%s]: %v\n", url, err)
+		t.Status = Failure
+		ch <- t
+
+		return
+	}
+
+	defer resp.Body.Close()
+
+	t.Bytes, err = readResponseBody(resp)
+	if err != nil {
+		fmt.Printf("Error reading response body for URL [%s]: %v\n", url, err)
+		t.Status = Failure
+		ch <- t
+
 		return
 	}
 
 	t.End = time.Now()
 	t.Duration = time.Since(t.Start).Seconds()
-	t.Bytes, err = readResponseBody(resp)
-	if err != nil {
-		fmt.Printf("Unable to read response body for url [ %s ], -- %v,\n", url, err)
-		return
-	}
-
-	status = Success
+	t.Status = Success
+	ch <- t
 }
 
-func SyncMutex(url string, synced *Syncd) {
+func SyncMutex(url string, synced *Syncd, wg *sync.WaitGroup) {
 	var t TimeStruct
 	status := Failure
 	defer func() {
 		synced.SetMutex(t)
-		wg.Done()
+
 		t.Status = status
+		t.Duration = time.Since(t.Start).Seconds()
+		t.End = time.Now()
+		wg.Done()
 	}()
 
 	t.Start = time.Now()
@@ -94,8 +100,6 @@ func SyncMutex(url string, synced *Syncd) {
 		return
 	}
 
-	t.End = time.Now()
-	t.Duration = time.Since(t.Start).Seconds()
 	t.Bytes, err = readResponseBody(resp)
 	if err != nil {
 		fmt.Printf("Unable to read response body for url [ %s ], -- %v,\n", url, err)
@@ -148,37 +152,44 @@ func readResponseBody(resp *http.Response) (int64, error) { // Maybe byte[] inst
 // GetUrlsGo fetches the provided urls and 'syncs' the response via go routines
 func GetUrlsGoChan(urls []string) []TimeStruct {
 	ch := make(chan TimeStruct)
+
+	var wg sync.WaitGroup
+
 	for _, url := range urls {
 		wg.Add(1)
-		go SyncCh(url, ch)
+		go SyncCh(url, ch, &wg)
 	}
+
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
 
-	res := chanToSlice(ch).([]TimeStruct)
-	// fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
+	// res := chanToSlice(ch).([]TimeStruct)
+
+	var res []TimeStruct
+	for t := range ch {
+		res = append(res, t)
+	}
+
 	return res
 }
 
 // GetUrlsGo fetches the provided urls and 'syncs' the response via go routines
 func GetUrlsGoMutex(urls []string) *Syncd {
 	s := &Syncd{}
+	var wg sync.WaitGroup
 	for _, url := range urls {
 		wg.Add(1)
-		go SyncMutex(url, s)
+		go SyncMutex(url, s, &wg)
 	}
 
-	// Why do this?
-	go func() {
-		wg.Wait()
-	}()
+	wg.Wait()
 
 	return s
 }
 
-// chanToSlice converts a channel to a slice of any type
+// chanToSlice converts a channel to a slice of any type. Not in use at the moment.
 func chanToSlice(ch interface{}) interface{} {
 	chv := reflect.ValueOf(ch)
 	slv := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(ch).Elem()), 0, 0)

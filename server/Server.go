@@ -144,15 +144,15 @@ func fetchUrls(w http.ResponseWriter, r *http.Request) {
 
 	startCh := time.Now()
 	chTimedUrls := fetch.GetUrlsGoChan(urls.Urls)
-	elpsdTimeCh := time.Now().Sub(startCh).Seconds()
+	elpsdTimeCh := time.Since(startCh).Seconds()
 	// chTimedData, err := json.Marshal(chTimedUrls)
 	startSync := time.Now()
 	syncTimedUrls := fetch.GetUrlsSync(urls.Urls)
-	elpsdTimeSync := time.Now().Sub(startSync).Seconds()
+	elpsdTimeSync := time.Since(startSync).Seconds()
 	// syncTimedData, err := json.Marshal(syncTimedUrls)
 	startMutex := time.Now()
 	mutexUrls := fetch.GetUrlsGoMutex(urls.Urls)
-	elpsdTimeMutex := time.Now().Sub(startMutex).Seconds()
+	elpsdTimeMutex := time.Since(startMutex).Seconds()
 
 	if err != nil {
 		panic(err)
@@ -211,18 +211,18 @@ func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 	var attemptsTimed []attemptTimes
 
 	for i := 0; i < f.Attempts; i++ {
-		startCh := time.Now()
-		fetch.GetUrlsGoChan(f.Urls)
-		elpsdTimeCh := time.Now().Sub(startCh).Seconds()
 		startSync := time.Now()
 		fetch.GetUrlsSync(f.Urls)
-		elpsdTimeSync := time.Now().Sub(startSync).Seconds()
+		elpsdTimeSync := time.Since(startSync).Seconds()
+		startCh := time.Now()
+		fetch.GetUrlsGoChan(f.Urls)
+		elpsdTimeCh := time.Since(startCh).Seconds()
 		startMutex := time.Now()
 		fetch.GetUrlsGoMutex(f.Urls)
-		elpsdTimeMutex := time.Now().Sub(startMutex).Seconds()
+		elpsdTimeMutex := time.Since(startMutex).Seconds()
 		attemptsTimed = append(attemptsTimed, attemptTimes{
-			chTime:    elpsdTimeCh,
 			syncTime:  elpsdTimeSync,
+			chTime:    elpsdTimeCh,
 			mutexTime: elpsdTimeMutex,
 		})
 	}

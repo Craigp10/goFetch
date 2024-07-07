@@ -36,8 +36,6 @@ func (s *Syncd) SetMutex(ts TimeStruct) {
 	s.Urls = append(s.Urls, ts)
 }
 
-// var wg sync.WaitGroup
-
 type Status string
 
 const (

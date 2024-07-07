@@ -18,10 +18,12 @@ type fetchUrlsRequest struct {
 }
 
 type fetchUrlsResponse struct {
-	ChUrls    []fetch.TimeStruct `json:"ChUrls"`
-	ChTimed   float64
-	SyncTimed float64
-	SyncUrls  fetch.Syncd `json:"SyncUrls"`
+	ChUrls     []fetch.TimeStruct `json:"ChUrls"`
+	ChTimed    float64
+	SyncTimed  float64
+	SyncUrls   *fetch.Syncd `json:"SyncUrls"`
+	MutexTimed float64
+	MutexUrls  *fetch.Syncd `json:"SyncUrls"`
 }
 
 type fetchUrlsAttemptsRequest struct {
@@ -33,6 +35,7 @@ type fetchUrlsAttemptsResponse struct {
 	TotalTime float64
 	ChAvg     float64
 	SyncAvg   float64
+	MutexAvg  float64
 }
 
 type timeRequest struct {
@@ -66,8 +69,9 @@ type urls struct {
 }
 
 type attemptTimes struct {
-	chTime   float64
-	syncTime float64
+	chTime    float64
+	syncTime  float64
+	mutexTime float64
 }
 
 type Config struct {
@@ -139,25 +143,30 @@ func fetchUrls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	startCh := time.Now()
-	chTimedUrls := fetch.GetUrlsGo(urls.Urls)
+	chTimedUrls := fetch.GetUrlsGoChan(urls.Urls)
 	elpsdTimeCh := time.Now().Sub(startCh).Seconds()
 	// chTimedData, err := json.Marshal(chTimedUrls)
 	startSync := time.Now()
 	syncTimedUrls := fetch.GetUrlsSync(urls.Urls)
 	elpsdTimeSync := time.Now().Sub(startSync).Seconds()
 	// syncTimedData, err := json.Marshal(syncTimedUrls)
+	startMutex := time.Now()
+	mutexUrls := fetch.GetUrlsGoMutex(urls.Urls)
+	elpsdTimeMutex := time.Now().Sub(startMutex).Seconds()
 
 	if err != nil {
 		panic(err)
 	}
 
 	f := fetchUrlsResponse{
-		ChUrls:    chTimedUrls,
-		ChTimed:   elpsdTimeCh,
-		SyncTimed: elpsdTimeSync,
-		SyncUrls:  syncTimedUrls,
+		ChUrls:     chTimedUrls,
+		ChTimed:    elpsdTimeCh,
+		SyncTimed:  elpsdTimeSync,
+		SyncUrls:   syncTimedUrls,
+		MutexUrls:  mutexUrls,
+		MutexTimed: elpsdTimeMutex,
 	}
-
+	fmt.Println(f.MutexTimed)
 	writeResponse(w, f)
 }
 
@@ -167,7 +176,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 
 func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 	// Definitely shouldn't parse in endpoint handler
-
+	fmt.Println("Checking")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -204,34 +213,41 @@ func fetchUrlsAttempts(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < f.Attempts; i++ {
 		startCh := time.Now()
-		fetch.GetUrlsGo(f.Urls)
+		fetch.GetUrlsGoChan(f.Urls)
 		elpsdTimeCh := time.Now().Sub(startCh).Seconds()
 		startSync := time.Now()
 		fetch.GetUrlsSync(f.Urls)
 		elpsdTimeSync := time.Now().Sub(startSync).Seconds()
+		startMutex := time.Now()
+		fetch.GetUrlsGoMutex(f.Urls)
+		elpsdTimeMutex := time.Now().Sub(startMutex).Seconds()
 		attemptsTimed = append(attemptsTimed, attemptTimes{
-			chTime:   elpsdTimeCh,
-			syncTime: elpsdTimeSync,
+			chTime:    elpsdTimeCh,
+			syncTime:  elpsdTimeSync,
+			mutexTime: elpsdTimeMutex,
 		})
 	}
 
-	var chValues, syncValues []float64
+	var chValues, syncValues, mutexValues []float64
 
 	for j := 0; j < len(attemptsTimed); j++ {
 		chValues = append(chValues, attemptsTimed[j].chTime)
 		syncValues = append(syncValues, attemptsTimed[j].syncTime)
+		mutexValues = append(mutexValues, attemptsTimed[j].mutexTime)
 	}
 
 	chAvg := utils.Average(chValues)
 	syncAvg := utils.Average(syncValues)
+	mutexAvg := utils.Average(mutexValues)
 	duration := time.Since(start).Seconds()
 
 	a := fetchUrlsAttemptsResponse{
 		TotalTime: duration,
 		ChAvg:     chAvg,
 		SyncAvg:   syncAvg,
+		MutexAvg:  mutexAvg,
 	}
-
+	fmt.Println(mutexAvg)
 	writeResponse(w, a)
 }
 
@@ -249,6 +265,11 @@ func writeResponse(w http.ResponseWriter, content interface{}) {
 type Exception struct {
 	Message string
 	Code    int
+}
+
+// Statisfy Errors interface
+func (e *Exception) Error() string {
+	return fmt.Sprintf("Code: %d - Message: %s", e.Code, e.Message)
 }
 
 func generateException(message string) []byte {

@@ -28,8 +28,8 @@ to quickly create a Cobra application.`,
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// ./go-fetch fetch https://google.com https://meemeals.com
-// go-fetch fetch https://google.com https://meemeals.com www.google.com
+// ./go-fetch fetch https://google.com http://127.0.0.1 https://facebook.com
+// go-fetch fetch https://google.com 127.0.0.1 https://facebook.com
 var fetchCmd = &cobra.Command{
 	Use:   "fetch [urls...]",
 	Short: "fetch can be considered a variadic go function, provide any number of strings as input, where strings need to be valid Urls",
